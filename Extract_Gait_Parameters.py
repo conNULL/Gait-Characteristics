@@ -33,7 +33,20 @@ OpenPose Keypoint Index Reference
 25, "Background"
 '''
 
-
+def writeColumnName(param, outFile):
+    
+    if "Position" in param:
+        outFile.write(param + " x,")
+        outFile.write(param + " y,")
+        outFile.write(param + " z,")
+        outFile.write(param + " confidence,")
+    elif "Angle" in param:
+        outFile.write(param + ",")
+        outFile.write(param + " confidence,")
+    else:
+        outFile.write(param +",")
+        
+        
 def getKeypoint(index, frame):
     return frame[1+4*index:1+4*(index+1)]
    
@@ -190,13 +203,16 @@ def getGaitParam(index, gaitParamList, frame):
         
     elif gaitParamList[index] == "Right Ankle Angle":
         return getJointAngleParam(24, 22, 8, 1, frame)
-
+        
+    elif gaitParamList[index] == "Time Stamp":
+        return [frame[0]]
+        
     else:
         return [0]
 
 def trimToValidFrames(frames, indexesToIgnore):
     
-    return frames
+    return frames[1:]
     
 if __name__ == "__main__":
     f = open("params.json", 'r')
@@ -205,7 +221,7 @@ if __name__ == "__main__":
     
     dir = params["directory"]
     
-    filename = "james3.csv"
+    filename = "S2T11.csv"
     
     f = open(dir+filename, 'r')
     frames = [[float(point) if not point == ' -nan(ind)' else 0 for point in frame.split(',')[:-2] ] for frame in f.readlines()[:-2]]
@@ -213,6 +229,7 @@ if __name__ == "__main__":
     
     
     GAIT_PARAMS = [
+    "Time Stamp",
     "Left Hip Position",
     "Right Hip Position",
     "Left Knee Position",
@@ -242,10 +259,13 @@ if __name__ == "__main__":
     frames = trimToValidFrames(frames, IRRELEVANT_INDEXES)
     
     outFile = open(filename[:-4] + "_params.csv", "w")
+    for param in GAIT_PARAMS:
+        writeColumnName(param, outFile)
+    outFile.write("\n")
     
     for frame in frames:
         
-        outParams = [frame[0]]
+        outParams = []
         
         for i in range(len(GAIT_PARAMS)):
             outParams += getGaitParam(i, GAIT_PARAMS, frame)
