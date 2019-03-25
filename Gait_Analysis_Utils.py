@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as sps
 
+def getMeanKernel(size):
+    
+    return [1/size for i in range(size)]
+    
 def getColumn(colName, data):
     
     return np.array(data[colName])

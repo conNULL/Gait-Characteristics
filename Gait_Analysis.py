@@ -5,6 +5,7 @@ import scipy.signal as sps
 import re
 from Gait_Analysis_Utils import *
 from Step_Time_Analysis import *
+from Ground_Plane_Detection import *
 
 
     
@@ -24,6 +25,8 @@ if __name__== "__main__":
     
     zHeelPositions = np.transpose(np.array([getColumn("Foot Heel X Location (cm.)",zenoData) ,getColumn("Foot Heel Y Location (cm.)",zenoData)]))       
     zToePositions = np.transpose(np.array([getColumn("Foot Toe X Location (cm.)",zenoData) ,getColumn("Foot Toe Y Location (cm.)",zenoData)]))   
+    
+    getGroundPlaneEquation(stepData)
      
     
     

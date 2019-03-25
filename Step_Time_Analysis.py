@@ -12,7 +12,7 @@ def getStepTimes(data,zenoData):
     time = getColumn("Time Stamp", data)
 
     
-    filter = [1/5,1/5,1/5,1/5,1/5]
+    filter = getMeanKernel(5)
     rightHeel = getFilteredPosition("Right Heel", filter, data)   
     leftHeel = getFilteredPosition("Left Heel", filter, data)   
     
@@ -37,3 +37,13 @@ def getStepTimes(data,zenoData):
     absoluteStepTimes = np.add(relativeStepTimes, firstStepTime)
     
     return relativeStepTimes, absoluteStepTimes, error
+    
+    
+def getHeelToeTimes(data, zenoData):
+    
+    '''
+    Calculates times of Heel Strike and Toe Off for each step.
+    Method based on "Two simple methods for determining gait events during treadmill and overground walking using kinematic data"
+    '''
+    
+    pass
