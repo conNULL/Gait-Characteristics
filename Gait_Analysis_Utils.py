@@ -51,3 +51,14 @@ def alignTimes(arr1, arr2):
         return arr2, arr1, diff
         
     return arr1, arr2, diff
+    
+def projectPointToPlane(point, plane):
+    
+    dist = np.dot(point, plane[:3]) +plane[3]
+    
+    if dist > 0:
+        projectedPoint = point - dist*plane[:3]
+    else:
+        projectedPoint = point + dist*plane[:3]
+        
+    return projectedPoint

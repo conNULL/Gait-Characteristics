@@ -6,6 +6,7 @@ import re
 from Gait_Analysis_Utils import *
 from Step_Time_Analysis import *
 from Ground_Plane_Detection import *
+from Gait_Analysis_Method_State import *
 
 
     
@@ -19,14 +20,19 @@ if __name__== "__main__":
     zenoData = pd.read_csv(zenoFileName)
     data = pd.read_csv(FILENAME, delimiter=",")
     
+    methodState = Gait_Analysis_Method_State(
+    data,
+    zenoData,
+    stepTimeFunction=getStepTimes,
+    stepPositionFunction=getStepPositions
+    )
     
-    relativeStepTimes, absoluteStepTimes, error = getStepTimes(data, zenoData)
-    stepData = data.loc[data["Time Stamp"].isin(absoluteStepTimes)]
+    relativeStepTimes, absoluteStepTimes, error = getStepTimes(methodState)          
+       
     
-    zHeelPositions = np.transpose(np.array([getColumn("Foot Heel X Location (cm.)",zenoData) ,getColumn("Foot Heel Y Location (cm.)",zenoData)]))       
-    zToePositions = np.transpose(np.array([getColumn("Foot Toe X Location (cm.)",zenoData) ,getColumn("Foot Toe Y Location (cm.)",zenoData)]))   
+    methodState.groundPlane = getGroundPlaneEquation(methodState)
+    methodState.walkingDirection = getWalkingDirection(methodState)
     
-    getGroundPlaneEquation(stepData)
      
     
     

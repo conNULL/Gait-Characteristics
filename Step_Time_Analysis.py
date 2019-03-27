@@ -1,6 +1,6 @@
 from Gait_Analysis_Utils import *
 
-def getStepTimes(data,zenoData):
+def getStepTimes(methodState):
     
     '''
     
@@ -9,12 +9,12 @@ def getStepTimes(data,zenoData):
     
     '''
     
-    time = getColumn("Time Stamp", data)
+    time = getColumn("Time Stamp", methodState.data)
 
     
     filter = getMeanKernel(5)
-    rightHeel = getFilteredPosition("Right Heel", filter, data)   
-    leftHeel = getFilteredPosition("Left Heel", filter, data)   
+    rightHeel = getFilteredPosition("Right Heel", filter, methodState.data)   
+    leftHeel = getFilteredPosition("Left Heel", filter, methodState.data)   
     
     diff = np.subtract(rightHeel, leftHeel)
     distance = np.linalg.norm(diff, axis=1)
@@ -24,7 +24,7 @@ def getStepTimes(data,zenoData):
     # plt.show()
     
     maxTimes = pruneExtrema(time[sps.argrelextrema(distance, np.greater)[0]])
-    zTimes = getColumn("First Contact (sec.)", zenoData)*1000
+    zTimes = getColumn("First Contact (sec.)", methodState.zenoData)*1000
     
     firstStepTime = maxTimes[0]
     relativeStepTimes = np.subtract(maxTimes, firstStepTime)
@@ -39,7 +39,7 @@ def getStepTimes(data,zenoData):
     return relativeStepTimes, absoluteStepTimes, error
     
     
-def getHeelToeTimes(data, zenoData):
+def getHeelToeTimes(methodState):
     
     '''
     Calculates times of Heel Strike and Toe Off for each step.
