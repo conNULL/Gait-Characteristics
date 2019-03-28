@@ -24,20 +24,38 @@ if __name__== "__main__":
     data,
     zenoData,
     stepTimeFunction=getStepTimes,
-    stepPositionFunction=getStepPositions
+    stepPositionFunction=getStepPositions,
+    stepAndStrideFunction=getHeelStrideAndStepLength
     )
-    
-    relativeStepTimes, absoluteStepTimes, error = getStepTimes(methodState)          
-       
-    
-    methodState.groundPlane = getGroundPlaneEquation(methodState)
+
+##Global Geometry
     methodState.walkingDirection = getWalkingDirection(methodState)
+    methodState.Rwc = getRotationToXAxis(methodState.walkingDirection)
+    methodState.groundPlane = getGroundPlaneEquation(methodState)
+  
+##Step Times
+    relativeStepTimes, absoluteStepTimes, timeError = methodState.stepTimeFunction(methodState) 
+    printError(timeError, "Step Time")
+    
+##Step Positions
+    leftHeelPositions, rightHeelPositions, leftToePositions,rightToePositions= methodState.stepPositionFunction(methodState)
+    heelSequence = getStepSequence(rightHeelPositions, leftHeelPositions)
+    toeSequence = getStepSequence(rightToePositions, leftToePositions)
+   
+##Step Length and Stride Length
+    strideLengths,StepLengths, strideLengthError,stepLengthError = methodState.stepAndStrideFunction(methodState)   
+    printError(strideLengthError, "Stride Length")
+    printError(stepLengthError, "Step Length")
+       
+    for i in range(len(leftHeelPositions)):
+        
+        print(np.array([np.matmul(methodState.Rwc, leftHeelPositions[i]),np.matmul(methodState.Rwc, rightHeelPositions[i]),np.matmul(methodState.Rwc, leftToePositions[i]),np.matmul(methodState.Rwc, rightToePositions[i])]))
+    
+##Dimensions
+    
     
      
     
     
     
     
-    
-    
-	

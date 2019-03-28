@@ -2,12 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as sps
 
+def printError(error, label):
+
+    print(label, "Error:", error, "Mean:", np.mean(error), "Absolute Mean:", np.mean(np.abs(error)), "\n")
+    
 def getMeanKernel(size):
     
     return [1/size for i in range(size)]
     
 def getColumn(colName, data):
     
+    if "(cm.)" in colName:
+        return np.array(data[colName])/100
     return np.array(data[colName])
 
 def getFilteredPosition(joint, kernel, data):
@@ -62,3 +68,42 @@ def projectPointToPlane(point, plane):
         projectedPoint = point + dist*plane[:3]
         
     return projectedPoint
+    
+def getLaterPoint(point1,point2,positiveDirection):
+    '''
+    Given two 3D points and a positive direction, return pointA, pointB where pointA is further in the positive direction than pointB
+    '''
+    diff = np.subtract(point2,point1)
+    angle = np.arccos(np.dot(diff, positiveDirection)/(np.linalg.norm(diff)*np.linalg.norm(positiveDirection)))
+    
+    if abs(angle) < np.pi/2:
+        
+        return point2, point1
+        
+    return point1,point2
+    
+def getRotationToXAxis(direction):
+    
+    n_direction = direction/np.linalg.norm(direction)
+    x = np.array([1,0,0])
+    cross = np.cross(n_direction, x)
+    s = np.linalg.norm(cross)
+    dot = np.dot(x,n_direction)
+    
+    skew = np.array([np.array([0,-cross[2], cross[1]]),np.array([cross[2],0, -cross[0]]),np.array([-cross[1],cross[0], 0])])
+   
+    R = np.identity(3) + skew + np.matmul(skew,skew)/(1+dot)
+    
+    return R
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

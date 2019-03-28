@@ -35,7 +35,7 @@ def calculateGroundPlaneEquation(leftHeelPositions, rightHeelPositions, leftToeP
     allGroundPoints = np.concatenate([leftHeelPositions,rightHeelPositions,leftToePositions,rightToePositions])
     normal,_,_,_ = spl.lstsq(np.c_[allGroundPoints[:,0],allGroundPoints[:,1], np.ones(allGroundPoints.shape[0])],allGroundPoints[:,2])
     
-    normal = normal/np.linalge.norm(normal)
+    normal = normal/np.linalg.norm(normal)
     
     return normal
     
