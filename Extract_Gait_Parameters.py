@@ -221,7 +221,7 @@ if __name__ == "__main__":
     
     dir = params["directory"]
     
-    filename = "S2T11.csv"
+    filename = "S2T21.csv"
     
     f = open(dir+filename, 'r')
     frames = [[float(point) if not point == ' -nan(ind)' else 0 for point in frame.split(',')[:-2] ] for frame in f.readlines()[:-2]]

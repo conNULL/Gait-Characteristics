@@ -30,14 +30,14 @@ def getStepPositions(methodState):
     return leftHeelPositions,rightHeelPositions,leftToePositions,rightToePositions
     
     
-def getStepSequence(leftPositions, rightPositions):
+def getStepSequence(leftPositions, rightPositions, methodState):
     
     secondStep, firstStep = getLaterPoint(rightPositions[0], leftPositions[0], methodState.walkingDirection)
     
     allPositions = []
     if np.array_equal(secondStep,rightPositions[0]):
         
-        for i in range(0,len(leftPositions),2):
+        for i in range(0,len(leftPositions)-1,2):
             allPositions.append(rightPositions[i])
             allPositions.append(leftPositions[i+1])
             
@@ -46,7 +46,7 @@ def getStepSequence(leftPositions, rightPositions):
             
     else:
         
-        for i in range(0,len(rightPositions),2):
+        for i in range(0,len(rightPositions)-1,2):
             allPositions.append(leftPositions[i])
             allPositions.append(rightPositions[i+1])
             
@@ -71,7 +71,7 @@ def getStrideAndStepLength(rightPositions,leftPositions, methodState):
     zStepLength = getColumn("Absolute Step Length (cm.)",  methodState.zenoData)
     
     
-    allPositions = getStepSequence(rightPositions,leftPositions)
+    allPositions = getStepSequence(rightPositions,leftPositions, methodState)
     
     strideLengths = []
     strideLengthErrors = []

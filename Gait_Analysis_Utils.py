@@ -24,22 +24,52 @@ def getFilteredPosition(joint, kernel, data):
     
     return np.array([x,y,z]).T
 
-def pruneExtrema(times):
+def pruneExtrema(maxTimeIndexes, time, distance):
     
         # ALPHA = 0.1
         # 
         # r = times[-1]-time[1]
         # theta = r*ALPHA
-        theta = 500
+        # theta = 500
+        # 
+        # newExtrema = [times[0]]
+        # 
+        # for i in range(1,len(times)):
+        #     if times[i] - newExtrema[-1] > theta:
+        #         newExtrema.append(times[i])
+        #         
         
-        newExtrema = [times[0]]
+        minTimeIndexes = []
+            
+        ALPHA = 0.1
         
-        for i in range(1,len(times)):
-            if times[i] - newExtrema[-1] > theta:
-                newExtrema.append(times[i])
+        for i in range(1, len(maxTimeIndexes)):
+            
+            minTimeIndexes.append(maxTimeIndexes[i-1] + np.argmin(distance[maxTimeIndexes[i-1]:maxTimeIndexes[i]]))
+            
+        minTimeIndexes.append(maxTimeIndexes[-1] + np.argmin(distance[maxTimeIndexes[-1]:]))
+        
+        maxDistances = distance[maxTimeIndexes]
+        minDistances = distance[minTimeIndexes]
+        
+        maxDistance = maxDistances[np.argsort(maxDistances)[-2]]
+        minDistance = minDistances[np.argsort(minDistances)[2]]
+        
+        threshold = ALPHA*(maxDistance-minDistance)
+        
+        indexesToKeep = []
+        
+        for i in range(len(maxTimeIndexes)):
+            
+            if maxDistances[i] - minDistances[i] > threshold:
+                indexesToKeep.append(i)
                 
+        return time[maxTimeIndexes[indexesToKeep]]
+        
+        
+        
+        
         return newExtrema
-   
 def alignTimes(arr1, arr2):
     
     if len(arr1) < len(arr2):
@@ -49,14 +79,14 @@ def alignTimes(arr1, arr2):
         swapped = False
         
     diff = len(arr1)-len(arr2)
-    offset = min(range(diff+1), key=lambda i: np.linalg.norm(np.subtract(arr1[i:i+len(arr2)], arr2)))
+    offset = min(range(diff+1), key=lambda i: np.linalg.norm(np.power(np.abs(np.subtract(arr1[i:i+len(arr2)], arr2)),[1/2])))
     
     arr1 = arr1[offset: offset+len(arr2)]
     
     if swapped:
-        return arr2, arr1, diff
+        return arr2, arr1, diff, offset
         
-    return arr1, arr2, diff
+    return arr1, arr2, diff, offset
     
 def projectPointToPlane(point, plane):
     

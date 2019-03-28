@@ -8,11 +8,10 @@ from Step_Time_Analysis import *
 from Ground_Plane_Detection import *
 from Gait_Analysis_Method_State import *
 
-
     
 if __name__== "__main__":
     
-    FILENAME = "S2T11_params.csv"
+    FILENAME = "S2T31_params.csv"
     
     zenoFileName = re.sub("[12]_params", "_Zeno", FILENAME)
     
@@ -39,23 +38,27 @@ if __name__== "__main__":
     
 ##Step Positions
     leftHeelPositions, rightHeelPositions, leftToePositions,rightToePositions= methodState.stepPositionFunction(methodState)
-    heelSequence = getStepSequence(rightHeelPositions, leftHeelPositions)
-    toeSequence = getStepSequence(rightToePositions, leftToePositions)
+    heelSequence = getStepSequence(rightHeelPositions, leftHeelPositions, methodState)
+    toeSequence = getStepSequence(rightToePositions, leftToePositions, methodState)
+    
+    if np.array_equal(heelSequence[0], leftHeelPositions[0]):
+        firstFoot = "left"
+    else:
+        firstFoot = "right"
    
 ##Step Length and Stride Length
     strideLengths,StepLengths, strideLengthError,stepLengthError = methodState.stepAndStrideFunction(methodState)   
     printError(strideLengthError, "Stride Length")
     printError(stepLengthError, "Step Length")
-       
-    for i in range(len(leftHeelPositions)):
-        
-        print(np.array([np.matmul(methodState.Rwc, leftHeelPositions[i]),np.matmul(methodState.Rwc, rightHeelPositions[i]),np.matmul(methodState.Rwc, leftToePositions[i]),np.matmul(methodState.Rwc, rightToePositions[i])]))
     
 ##Dimensions
     
+    zFootLength = getColumn("Foot Length (cm.)", zenoData)
     
-     
+    footLength = np.linalg.norm(np.subtract(toeSequence, heelSequence), axis=1)
+    error = np.subtract(footLength, zFootLength)
     
-    
+    printError(error, "Foot Length")
+        
     
     

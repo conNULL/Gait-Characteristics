@@ -5,7 +5,7 @@ from Gait_Analysis_Utils import *
 
 class Gait_Analysis_Method_State():
     
-    def __init__(self,data,zenoData,stepTimeFunction=None,stepPositionFunction=None,stepAndStrideFunction=None,groundPlane=None,walkingDirection=None, Rwc=None):
+    def __init__(self,data,zenoData,stepTimeFunction=None,stepPositionFunction=None,stepAndStrideFunction=None,groundPlane=None,walkingDirection=None, Rwc=None, timePruneFunction=None):
         
         self.data = data
         self.zenoData = zenoData
@@ -15,3 +15,4 @@ class Gait_Analysis_Method_State():
         self.groundPlane = groundPlane
         self.walkingDirection = walkingDirection
         self.Rwc = Rwc #rotation matrix from walking direction to camera x-axis
+        self.timePruneFunction = timePruneFunction

@@ -12,7 +12,7 @@ def getStepTimes(methodState):
     time = getColumn("Time Stamp", methodState.data)
 
     
-    filter = getMeanKernel(5)
+    filter = getMeanKernel(3)
     rightHeel = getFilteredPosition("Right Heel", filter, methodState.data)   
     leftHeel = getFilteredPosition("Left Heel", filter, methodState.data)   
     
@@ -23,23 +23,25 @@ def getStepTimes(methodState):
     # plt.plot(time, distance)
     # plt.show()
     
-    maxTimes = pruneExtrema(time[sps.argrelextrema(distance, np.greater)[0]])
+    maxTimes = pruneExtrema(sps.argrelextrema(distance, np.greater)[0], time, distance)
     zTimes = getColumn("First Contact (sec.)", methodState.zenoData)*1000
     
-    firstStepTime = maxTimes[0]
-    relativeStepTimes = np.subtract(maxTimes, firstStepTime)
+    relativeStepTimes = np.subtract(maxTimes, maxTimes[0])
     zTimes -= zTimes[0]
     
-    relativeStepTimes, zTimes, diff = alignTimes(relativeStepTimes, zTimes)
+    diffRelativeStepTimes, diffZTimes, diff,offset = alignTimes(np.diff(relativeStepTimes), np.diff(zTimes))
+    
+    relativeStepTimes = np.concatenate([[0], np.cumsum(diffRelativeStepTimes)])    
+    zTimes = np.concatenate([[0], np.cumsum(diffZTimes)])
     
     error = np.abs(np.subtract(relativeStepTimes, zTimes))
     
-    absoluteStepTimes = np.add(relativeStepTimes, firstStepTime)
+    absoluteStepTimes = np.add(relativeStepTimes, maxTimes[offset])
     
     return relativeStepTimes, absoluteStepTimes, error
     
     
-def getHeelToeTimes(methodState):
+def getHeelStrikeTimes(methodState):
     
     '''
     Calculates times of Heel Strike and Toe Off for each step.
