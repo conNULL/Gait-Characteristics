@@ -8,10 +8,10 @@ def getStepPositions(methodState):
     The error on the actual positions is not important as it does not necessarily influence error on and gait characteristics of interest.
     '''
     
-    data = methodState.data
+    data = methodState.allData
     zenoData = methodState.zenoData
     
-    relativeStepTimes, absoluteStepTimes, error = methodState.stepTimeFunction(methodState)
+    relativeStepTimes, absoluteStepTimes, error,_,_,_ = methodState.timeFunc(methodState)
     
     stepData = data.loc[data["Time Stamp"].isin(absoluteStepTimes)]
     

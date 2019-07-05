@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import scipy.linalg as spl
 
-def getWalkingDirection(methodState):
+def getWalkingDirection(methodState, doPlot = False):
     
     '''
     Detects walking direction based on motion of shoulders, similar to what was proposed by 
@@ -13,7 +13,7 @@ def getWalkingDirection(methodState):
     Returns a numpy array [x,y,z] representing the vector of the direction of walking
     '''
     
-    data = methodState.data
+    data = methodState.allData
     zenoData = methodState.zenoData
     
     filter = getMeanKernel(3)
@@ -27,6 +27,13 @@ def getWalkingDirection(methodState):
     
     walkingDirection = np.mean(averageShoulderDiff,axis=0)
     
+    if doPlot:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        a = np.zeros([averageShoulderDiff.shape[0]])
+        ax.quiver(a,a,a,averageShoulderDiff[:,0],averageShoulderDiff[:,1],averageShoulderDiff[:,2],length=0.3,arrow_length_ratio=0.1)
+        ax.quiver([0],[0],[0], walkingDirection[0],walkingDirection[1],walkingDirection[2],length=2,arrow_length_ratio=0.5)
+        plt.show()
     return walkingDirection/np.linalg.norm(walkingDirection)
   
 def calculateGroundPlaneEquation(leftHeelPositions, rightHeelPositions, leftToePositions, rightToePositions):
@@ -35,9 +42,9 @@ def calculateGroundPlaneEquation(leftHeelPositions, rightHeelPositions, leftToeP
     allGroundPoints = np.concatenate([leftHeelPositions,rightHeelPositions,leftToePositions,rightToePositions])
     normal,_,_,_ = spl.lstsq(np.c_[allGroundPoints[:,0],allGroundPoints[:,1], np.ones(allGroundPoints.shape[0])],allGroundPoints[:,2])
     
-    normal = normal/np.linalg.norm(normal)
+    # normal = normal/np.linalg.norm(normal)
     
-    return normal
+    return normal, allGroundPoints
     
 def getGroundPlaneEquation(methodState, doPlot=False):
     
@@ -51,7 +58,7 @@ def getGroundPlaneEquation(methodState, doPlot=False):
     
     leftHeelPositions, rightHeelPositions, leftToePositions,rightToePositions= methodState.stepPositionFunction(methodState)
     
-    normal = calculateGroundPlaneEquation(leftHeelPositions, rightHeelPositions, leftToePositions,rightToePositions)
+    normal, allGroundPoints = calculateGroundPlaneEquation(leftHeelPositions, rightHeelPositions, leftToePositions,rightToePositions)
     
     if doPlot:
         fig = plt.figure()

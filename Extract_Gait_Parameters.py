@@ -1,6 +1,9 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import re
+from Gait_Analysis_Utils import *
 
 ''' 
 OpenPose Keypoint Index Reference
@@ -50,57 +53,7 @@ def writeColumnName(param, outFile):
 def getKeypoint(index, frame):
     return frame[1+4*index:1+4*(index+1)]
    
-def getAngle(p, q, r):
-    '''
-    
-    Calculates the angle between points q and r about point p in the plane formed by p, q, and r.
-    
-    Params are arrays in the form [x,y,z]
-    
-    Returns the angle in radians
-    '''
-    
-    pq = np.subtract(q,p)
-    pr = np.subtract(r,p)
-    
-    dot = np.dot(pq,pr)
-    normal = np.cross(pq,pr)
-    sign = 1
-    
-    #Note singularity for perfectly horizontal (with respect to camera) limbs
-    if normal[2] < 0:
-        sign = -1
-        
-    # det = np.linalg.det((pq,pr,normal))
-    # return np.arctan2(det, dot)*180/np.pi
-    val =  sign*np.arccos(dot/(np.linalg.norm(pq)*np.linalg.norm(pr)))*180/np.pi
-    
-    if val > 0:
-        val -= 360
-        
-    return val+180
-    
-def getJointAngle(p, q, pref, qref):
-    '''
-    
-    Calculates the joint angle for angle p.
-    
-    Params:
-        p is the joint for which to calculate the angle
-        q is another end of a limb connected to p
-        pref and qref form a limb to form the angle with along with p and q.
-        
-    
-        
-    Params are arrays in the form [x,y,z]
-    
-    Returns the angle in radians
-    '''
-    p1 = pref
-    q1 = np.add(q, np.subtract(pref, p))
-    r = qref
-    
-    return getAngle(p1,q1,r)
+
     
 def getJointAngleParam(p, q, pref, qref, frame):
     '''
@@ -143,6 +96,9 @@ def getGaitParam(index, gaitParamList, frame):
     elif gaitParamList[index] == "Right Hip Position":
         return getKeypoint(9, frame)
         
+    elif gaitParamList[index] == "Neck Position":
+        return getKeypoint(1, frame)
+        
     elif gaitParamList[index] == "Left Knee Position":
         return getKeypoint(13, frame)
         
@@ -182,6 +138,9 @@ def getGaitParam(index, gaitParamList, frame):
     elif gaitParamList[index] == "Right Shoulder Position":
         return getKeypoint(2, frame)
         
+    elif gaitParamList[index] == "Nose Position":
+        return getKeypoint(0, frame)
+        
     elif gaitParamList[index] == "Left Hip Angle":
         temp =   getJointAngleParam(12, 13, 8, 1, frame)
         temp[0] = 180-temp[0]
@@ -220,87 +179,100 @@ if __name__ == "__main__":
     f.close()
     
     dir = params["directory"]
+    files = [file for file in os.listdir(dir) if re.search("[12].csv", file) != None]
+    # files = ["cforward31.csv"]
+    # filename = "S2T31.csv"
     
-    filename = "S2T21.csv"
-    
-    f = open(dir+filename, 'r')
-    frames = [[float(point) if not point == ' -nan(ind)' else 0 for point in frame.split(',')[:-2] ] for frame in f.readlines()[:-2]]
-    f.close()
-    
-    
-    GAIT_PARAMS = [
-    "Time Stamp",
-    "Left Hip Position",
-    "Right Hip Position",
-    "Left Knee Position",
-    "Right Knee Position",
-    "Left Ankle Position",
-    "Right Ankle Position",
-    "Left Heel Position",
-    "Right Heel Position",
-    "Left Big Toe Position",
-    "Right Big Toe Position",
-    "Left Small Toe Position",
-    "Right Small Toe Position",
-    "Mid Hip Position",
-    "Left Shoulder Position",
-    "Right Shoulder Position",
-    "Left Hip Angle",
-    "Right Hip Angle",
-    "Left Knee Angle",
-    "Right Knee Angle",
-    "Left Ankle Angle",
-    "Right Ankle Angle"
-    ]
+    for filename in files:
+        if "knee" in filename:
+            continue
+        f = open(dir+filename, 'r')
+        frames = [[float(point) if not point == ' -nan(ind)' else 0 for point in frame.split(',')[:-2] ] for frame in f.readlines()[:-2]]
+        print(files)
+        f.close()
         
-    allOutParams = []
-    IRRELEVANT_INDEXES = set([0,1,3,4,6,7,15,16,17,18,25])
         
-    frames = trimToValidFrames(frames, IRRELEVANT_INDEXES)
-    
-    outFile = open(filename[:-4] + "_params.csv", "w")
-    for param in GAIT_PARAMS:
-        writeColumnName(param, outFile)
-    outFile.write("\n")
-    
-    for frame in frames:
-        
-        outParams = []
-        
-        for i in range(len(GAIT_PARAMS)):
-            outParams += getGaitParam(i, GAIT_PARAMS, frame)
+        GAIT_PARAMS = [
+        "Time Stamp",
+        "Left Hip Position",
+        "Right Hip Position",
+        "Left Knee Position",
+        "Right Knee Position",
+        "Left Ankle Position",
+        "Right Ankle Position",
+        "Left Heel Position",
+        "Right Heel Position",
+        "Left Big Toe Position",
+        "Right Big Toe Position",
+        "Left Small Toe Position",
+        "Right Small Toe Position",
+        "Mid Hip Position",
+        "Neck Position",
+        "Left Shoulder Position",
+        "Right Shoulder Position",
+        "Nose Position",
+        "Left Hip Angle",
+        "Right Hip Angle",
+        "Left Knee Angle",
+        "Right Knee Angle",
+        "Left Ankle Angle",
+        "Right Ankle Angle"
+        ]
             
-        for param in outParams:
+        allOutParams = []
+        IRRELEVANT_INDEXES = set([0,1,3,4,6,7,15,16,17,18,25])
             
-            outFile.write(str(param) + ",")
-            
-        allOutParams.append(outParams)
+        frames = trimToValidFrames(frames, IRRELEVANT_INDEXES)
+        
+        outFile = open(filename[:-4] + "_params.csv", "w")
+        for param in GAIT_PARAMS:
+            writeColumnName(param, outFile)
         outFile.write("\n")
         
-    outFile.close()
+        for frame in frames:
+            
+            outParams = []
+            
+            for i in range(len(GAIT_PARAMS)):
+                outParams += getGaitParam(i, GAIT_PARAMS, frame)
+                
+            for param in outParams:
+                
+                outFile.write(str(param) + ",")
+                
+            allOutParams.append(outParams)
+            outFile.write("\n")
+            
+        outFile.close()
         
-    meank = [1/3,1/3,1/3]
-    # meank = [1]
-    t = [p[0] for p in allOutParams]        
-    ra = [p[-2] for p in allOutParams]        
-    rk = [p[-6] for p in allOutParams]        
-    rh = [p[-10] for p in allOutParams]
-    plt.figure()
-    plt.plot(t, np.convolve(meank, ra, mode="same"), label="ankle")
-    plt.plot(t, np.convolve(meank, rk, mode="same"), label="knee")
-    plt.plot(t, np.convolve(meank, rh, mode="same"), label="hip")
-    plt.legend()
-          
-    ra = [p[-4] for p in allOutParams]        
-    rk = [p[-8] for p in allOutParams]        
-    rh = [p[-12] for p in allOutParams]
-    plt.figure()
-    plt.plot(t, np.convolve(meank, ra, mode="same"), label="ankle")
-    plt.plot(t, np.convolve(meank, rk, mode="same"), label="knee")
-    plt.plot(t, np.convolve(meank, rh, mode="same"), label="hip")
-    plt.legend()
-    plt.show()
-        
+        meank = [1/3,1/3,1/3]
+        # meank = [1]
+        t = [p[0] for p in allOutParams]        
+        ra = [p[-2] for p in allOutParams]        
+        rk = [p[-6] for p in allOutParams]        
+        rh = [p[-10] for p in allOutParams]
+        plt.figure()
+        plt.plot(t, np.convolve(meank, ra, mode="same"), label="ankle")
+        plt.plot(t, np.convolve(meank, rk, mode="same"), label="knee")
+        plt.plot(t, np.convolve(meank, rh, mode="same"), label="hip")
+        plt.title(filename)
+        plt.xlabel("Time [ms]")
+        plt.ylabel("Angle [degrees]")
+        plt.legend()
+            
+        ra = [p[-4] for p in allOutParams]        
+        rk = [p[-8] for p in allOutParams]        
+        rh = [p[-12] for p in allOutParams]
+        plt.figure()
+        plt.plot(t, np.convolve(meank, ra, mode="same"), label="ankle")
+        plt.plot(t, np.convolve(meank, rk, mode="same"), label="knee")
+        plt.plot(t, np.convolve(meank, rh, mode="same"), label="hip")
+        plt.xlabel("Time [ms]")
+        plt.ylabel("Angle [degrees]")
+        plt.title(filename)
+        plt.legend()
+        plt.show()
+    #     
         
         
         
